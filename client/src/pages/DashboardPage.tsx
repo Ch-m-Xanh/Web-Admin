@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fetchAdminStats } from '../api/admin'
+import { SkeletonBlock } from '../components/Skeleton'
 import type { AdminStats } from '../types'
 
 const CHART_COLOR = '#15803d'
@@ -45,7 +46,17 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải dữ liệu...</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SkeletonBlock className="h-24 w-full" />
+            <SkeletonBlock className="h-24 w-full" />
+            <SkeletonBlock className="h-24 w-full" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonBlock className="h-72 w-full" />
+            <SkeletonBlock className="h-72 w-full" />
+          </div>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

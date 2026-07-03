@@ -4,6 +4,7 @@ import { Plant } from "../models/Plant";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { requireAuth, requireAdmin } from "../middleware/auth";
+import { emitPublic } from "../socket";
 
 const router = Router();
 
@@ -66,6 +67,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const body = plantSchema.parse(req.body);
     const plant = await Plant.create(body);
+    emitPublic("plant:created", plant);
     res.status(201).json(plant);
   })
 );
@@ -80,6 +82,7 @@ router.put(
     if (!plant) {
       throw AppError.notFound("Khong tim thay cay nay", "PLANT_NOT_FOUND");
     }
+    emitPublic("plant:updated", plant);
     res.json(plant);
   })
 );
@@ -93,6 +96,7 @@ router.delete(
     if (!plant) {
       throw AppError.notFound("Khong tim thay cay nay", "PLANT_NOT_FOUND");
     }
+    emitPublic("plant:deleted", { _id: plant._id.toString() });
     res.json({ success: true });
   })
 );

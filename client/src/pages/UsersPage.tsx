@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Pagination from '../components/Pagination'
+import { SkeletonTableRows } from '../components/Skeleton'
 import { deleteUser, fetchUsers, updateUser } from '../api/admin'
 import { useGlobalPopup } from '../context/GlobalPopupContext'
 import type { User } from '../types'
 
+const PAGE_SIZE = 10
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
   const { showSuccess } = useGlobalPopup()
 
   const loadUsers = useCallback(() => {
@@ -21,6 +26,13 @@ export default function UsersPage() {
   useEffect(() => {
     loadUsers()
   }, [loadUsers])
+
+  const pageCount = Math.max(1, Math.ceil(users.length / PAGE_SIZE))
+  const clampedPage = Math.min(page, pageCount)
+  const paginatedUsers = useMemo(
+    () => users.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE),
+    [users, clampedPage],
+  )
 
   const handleToggleLock = async (user: User) => {
     await updateUser(user._id, { isLocked: !user.isLocked })
@@ -52,22 +64,16 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={5} className="py-6 text-center text-gray-400">
-                  Đang tải...
-                </td>
-              </tr>
-            )}
+            {loading && <SkeletonTableRows rows={5} columns={5} />}
             {!loading && users.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-6 text-center text-gray-400">
-                  Không có người dùng nào
+                <td colSpan={5} className="py-10 text-center text-gray-400">
+                  Chưa có người dùng nào.
                 </td>
               </tr>
             )}
             {!loading &&
-              users.map((user) => (
+              paginatedUsers.map((user) => (
                 <tr key={user._id} className="border-b border-gray-100 last:border-0">
                   <td className="py-3 px-4 text-gray-900">{user.name}</td>
                   <td className="py-3 px-4 text-gray-500">{user.email}</td>
@@ -99,6 +105,15 @@ export default function UsersPage() {
               ))}
           </tbody>
         </table>
+        {!loading && (
+          <Pagination
+            page={clampedPage}
+            pageCount={pageCount}
+            onPageChange={setPage}
+            totalItems={users.length}
+            pageSize={PAGE_SIZE}
+          />
+        )}
       </div>
     </div>
   )

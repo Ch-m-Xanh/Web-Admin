@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import PlantFormModal from '../components/PlantFormModal'
+import Pagination from '../components/Pagination'
+import { SkeletonTableRows } from '../components/Skeleton'
 import { createPlant, deletePlant, fetchPlants, updatePlant } from '../api/plants'
 import { useGlobalPopup } from '../context/GlobalPopupContext'
+import { getSocket } from '../services/socket'
 import type { Plant, PlantInput } from '../types'
 
 const CARE_LEVEL_LABEL: Record<string, string> = {
@@ -10,10 +13,13 @@ const CARE_LEVEL_LABEL: Record<string, string> = {
   hard: 'Khó',
 }
 
+const PAGE_SIZE = 10
+
 export default function PlantsPage() {
   const [plants, setPlants] = useState<Plant[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingPlant, setEditingPlant] = useState<Plant | null>(null)
   const { showSuccess } = useGlobalPopup()
@@ -31,6 +37,43 @@ export default function PlantsPage() {
   useEffect(() => {
     loadPlants()
   }, [loadPlants])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search])
+
+  // Real-time sync: keep the list in sync across admin tabs/sessions without
+  // requiring a manual refresh.
+  useEffect(() => {
+    const socket = getSocket()
+
+    const handleCreated = (plant: Plant) => {
+      setPlants((prev) => (prev.some((p) => p._id === plant._id) ? prev : [plant, ...prev]))
+    }
+    const handleUpdated = (plant: Plant) => {
+      setPlants((prev) => prev.map((p) => (p._id === plant._id ? plant : p)))
+    }
+    const handleDeleted = (payload: { _id: string }) => {
+      setPlants((prev) => prev.filter((p) => p._id !== payload._id))
+    }
+
+    socket.on('plant:created', handleCreated)
+    socket.on('plant:updated', handleUpdated)
+    socket.on('plant:deleted', handleDeleted)
+
+    return () => {
+      socket.off('plant:created', handleCreated)
+      socket.off('plant:updated', handleUpdated)
+      socket.off('plant:deleted', handleDeleted)
+    }
+  }, [])
+
+  const pageCount = Math.max(1, Math.ceil(plants.length / PAGE_SIZE))
+  const clampedPage = Math.min(page, pageCount)
+  const paginatedPlants = useMemo(
+    () => plants.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE),
+    [plants, clampedPage],
+  )
 
   const openCreateModal = () => {
     setEditingPlant(null)
@@ -66,7 +109,7 @@ export default function PlantsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Cây trồng</h1>
         <button
           onClick={openCreateModal}
@@ -97,22 +140,16 @@ export default function PlantsPage() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={5} className="py-6 text-center text-gray-400">
-                  Đang tải...
-                </td>
-              </tr>
-            )}
+            {loading && <SkeletonTableRows rows={5} columns={5} />}
             {!loading && plants.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-6 text-center text-gray-400">
-                  Không có cây nào
+                <td colSpan={5} className="py-10 text-center text-gray-400">
+                  Chưa có cây trồng nào. Bấm "Thêm cây mới" để bắt đầu.
                 </td>
               </tr>
             )}
             {!loading &&
-              plants.map((plant) => (
+              paginatedPlants.map((plant) => (
                 <tr key={plant._id} className="border-b border-gray-100 last:border-0">
                   <td className="py-3 px-4 text-gray-900">{plant.name}</td>
                   <td className="py-3 px-4 text-gray-500">{plant.category}</td>
@@ -136,6 +173,15 @@ export default function PlantsPage() {
               ))}
           </tbody>
         </table>
+        {!loading && (
+          <Pagination
+            page={clampedPage}
+            pageCount={pageCount}
+            onPageChange={setPage}
+            totalItems={plants.length}
+            pageSize={PAGE_SIZE}
+          />
+        )}
       </div>
 
       {modalOpen && (

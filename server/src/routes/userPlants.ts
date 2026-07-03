@@ -4,6 +4,7 @@ import { UserPlant } from "../models/UserPlant";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { requireAuth } from "../middleware/auth";
+import { emitToUser } from "../socket";
 
 const router = Router();
 router.use(requireAuth);
@@ -40,6 +41,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const body = createSchema.parse(req.body);
     const userPlant = await UserPlant.create({ ...body, userId: req.user!.id });
+    emitToUser(req.user!.id, "user-plant:created", userPlant);
     res.status(201).json({ userPlant });
   })
 );
@@ -61,6 +63,7 @@ router.put(
       new: true,
       runValidators: true,
     });
+    emitToUser(req.user!.id, "user-plant:updated", userPlant);
     res.json({ userPlant });
   })
 );
@@ -75,6 +78,7 @@ router.put(
       { $set: Object.fromEntries(Object.entries(reminder).map(([k, v]) => [`reminder.${k}`, v])) },
       { new: true, runValidators: true }
     );
+    emitToUser(req.user!.id, "user-plant:updated", userPlant);
     res.json({ userPlant });
   })
 );
@@ -84,6 +88,7 @@ router.delete(
   asyncHandler(async (req, res) => {
     await findOwnedUserPlant(req.params.id, req.user!.id);
     await UserPlant.findByIdAndDelete(req.params.id);
+    emitToUser(req.user!.id, "user-plant:deleted", { _id: req.params.id });
     res.json({ success: true });
   })
 );

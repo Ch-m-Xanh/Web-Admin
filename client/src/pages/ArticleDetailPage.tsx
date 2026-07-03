@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchArticle } from '../api/articles'
+import { SkeletonBlock } from '../components/Skeleton'
 import type { Article } from '../types'
 
 export default function ArticleDetailPage() {
@@ -33,7 +34,14 @@ export default function ArticleDetailPage() {
         ← Quay lại danh sách bài viết
       </Link>
 
-      {loading && <p className="text-gray-500">Đang tải...</p>}
+      {loading && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6 space-y-4">
+          <SkeletonBlock className="h-56 w-full" />
+          <SkeletonBlock className="h-6 w-2/3" />
+          <SkeletonBlock className="h-4 w-full" />
+          <SkeletonBlock className="h-4 w-5/6" />
+        </div>
+      )}
 
       {!loading && !article && <p className="text-gray-400">Không tìm thấy bài viết.</p>}
 
