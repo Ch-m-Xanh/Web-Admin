@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import cors from "cors";
 import express from "express";
@@ -54,6 +55,18 @@ export function createApp() {
   app.use("/api/chat", chatRoutes);
   app.use("/api/uploads", uploadRoutes);
   app.use("/api/admin", adminRoutes);
+
+  // Neu client da duoc build cung repo (deploy chung 1 Render Web Service cho
+  // ca FE+BE Web Admin), serve luon file tinh va fallback SPA cho cac route
+  // khong phai /api hay /uploads. Neu client/dist khong ton tai (vi du dev
+  // local, hoac deploy BE/FE tach rieng), bo qua doan nay, API van hoat dong binh thuong.
+  const clientDistPath = path.join(__dirname, "..", "..", "client", "dist");
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get(/^(?!\/api|\/uploads).*/, (_req, res) => {
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+  }
 
   app.use(notFoundHandler);
   app.use(errorHandler);
