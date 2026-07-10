@@ -5,7 +5,10 @@ export const FALLBACK_CATEGORIES: CategoryOption[] = [
   { value: 'phong-ngu', label: 'Phòng ngủ' },
   { value: 'ban-lam-viec', label: 'Bàn làm việc' },
   { value: 'phong-bep', label: 'Phòng bếp' },
-  { value: 'rau-cu-chua-benh', label: 'Rau củ chữa bệnh' },
+  { value: 'phong-khach', label: 'Phòng khách' },
+  { value: 'san-nha', label: 'Sân nhà' },
+  { value: 'ban-cong', label: 'Ban công' },
+  { value: 'rau-cu-chua-benh', label: 'Rau củ / Chữa bệnh' },
 ]
 
 function normalizeCategory(item: CategoryApiItem): CategoryOption {

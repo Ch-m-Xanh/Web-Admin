@@ -7,6 +7,7 @@ export interface IUser extends Document {
   avatarUrl?: string;
   role: "user" | "admin";
   gardenName?: string;
+  gardenDescription?: string;
   followerIds: Types.ObjectId[];
   followingIds: Types.ObjectId[];
   isLocked: boolean;
@@ -22,6 +23,7 @@ const userSchema = new Schema<IUser>(
     avatarUrl: { type: String, default: "" },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     gardenName: { type: String, default: "" },
+    gardenDescription: { type: String, default: "" },
     followerIds: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     followingIds: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     isLocked: { type: Boolean, default: false },

@@ -20,6 +20,7 @@ const createSchema = z.object({
   plantId: z.string().optional(),
   customName: z.string().min(1, "Ten cay khong duoc de trong"),
   photoUrl: z.string().min(1, "Anh cay khong duoc de trong"),
+  space: z.string().optional(),
   reminder: reminderSchema.optional(),
 });
 
@@ -32,7 +33,9 @@ router.get(
     const userPlants = await UserPlant.find({ userId: req.user!.id })
       .populate("plantId")
       .sort({ addedAt: -1 });
-    res.json({ userPlants });
+    // Bare array, matching every other list endpoint (plants.ts, articles.ts)
+    // and what both Web User's and Mobile's client code expect.
+    res.json(userPlants);
   })
 );
 
@@ -42,7 +45,7 @@ router.post(
     const body = createSchema.parse(req.body);
     const userPlant = await UserPlant.create({ ...body, userId: req.user!.id });
     emitToUser(req.user!.id, "user-plant:created", userPlant);
-    res.status(201).json({ userPlant });
+    res.status(201).json(userPlant);
   })
 );
 
@@ -64,7 +67,7 @@ router.put(
       runValidators: true,
     });
     emitToUser(req.user!.id, "user-plant:updated", userPlant);
-    res.json({ userPlant });
+    res.json(userPlant);
   })
 );
 
@@ -79,7 +82,7 @@ router.put(
       { new: true, runValidators: true }
     );
     emitToUser(req.user!.id, "user-plant:updated", userPlant);
-    res.json({ userPlant });
+    res.json(userPlant);
   })
 );
 

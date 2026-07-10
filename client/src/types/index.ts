@@ -28,6 +28,7 @@ export interface User {
   avatarUrl: string
   role: UserRole
   gardenName: string
+  gardenDescription?: string
   isLocked: boolean
   createdAt: string
 }

@@ -58,16 +58,17 @@ export default function UsersPage() {
             <tr className="text-left text-gray-500 border-b border-gray-200">
               <th className="py-3 px-4 font-medium">Tên</th>
               <th className="py-3 px-4 font-medium">Email</th>
+              <th className="py-3 px-4 font-medium">Khu vườn</th>
               <th className="py-3 px-4 font-medium">Vai trò</th>
               <th className="py-3 px-4 font-medium">Trạng thái</th>
               <th className="py-3 px-4 font-medium text-right">Hành động</th>
             </tr>
           </thead>
           <tbody>
-            {loading && <SkeletonTableRows rows={5} columns={5} />}
+            {loading && <SkeletonTableRows rows={5} columns={6} />}
             {!loading && users.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-10 text-center text-gray-400">
+                <td colSpan={6} className="py-10 text-center text-gray-400">
                   Chưa có người dùng nào.
                 </td>
               </tr>
@@ -77,6 +78,9 @@ export default function UsersPage() {
                 <tr key={user._id} className="border-b border-gray-100 last:border-0">
                   <td className="py-3 px-4 text-gray-900">{user.name}</td>
                   <td className="py-3 px-4 text-gray-500">{user.email}</td>
+                  <td className="py-3 px-4 text-gray-500" title={user.gardenDescription || ''}>
+                    {user.gardenName || '—'}
+                  </td>
                   <td className="py-3 px-4 text-gray-500 capitalize">{user.role}</td>
                   <td className="py-3 px-4">
                     <span

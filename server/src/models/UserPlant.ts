@@ -12,6 +12,9 @@ export interface IUserPlant extends Document {
   plantId?: Types.ObjectId;
   customName: string;
   photoUrl: string;
+  // Where the plant lives — 'indoor' | 'desk' | 'balcony' | 'garden' | 'other',
+  // matches Mobile's constants/spaces.ts SPACE_OPTIONS keys.
+  space?: string;
   reminder: IReminder;
   addedAt: Date;
 }
@@ -31,6 +34,7 @@ const userPlantSchema = new Schema<IUserPlant>({
   plantId: { type: Schema.Types.ObjectId, ref: "Plant", required: false },
   customName: { type: String, required: true, trim: true },
   photoUrl: { type: String, required: true },
+  space: { type: String, default: "" },
   reminder: { type: reminderSchema, default: () => ({}) },
   addedAt: { type: Date, default: Date.now },
 });
