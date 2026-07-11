@@ -15,6 +15,11 @@ export interface IUserPlant extends Document {
   // Where the plant lives — 'indoor' | 'desk' | 'balcony' | 'garden' | 'other',
   // matches Mobile's constants/spaces.ts SPACE_OPTIONS keys.
   space?: string;
+  // 'foliage' | 'flowering' | 'cactus' | 'herbs' | 'woody' | 'other',
+  // matches Mobile's constants/plantCare.ts PLANT_GROUPS keys.
+  plantGroup?: string;
+  // 'direct' | 'indirect' | 'shade', matches Mobile's LIGHT_OPTIONS keys.
+  light?: string;
   reminder: IReminder;
   addedAt: Date;
 }
@@ -35,6 +40,8 @@ const userPlantSchema = new Schema<IUserPlant>({
   customName: { type: String, required: true, trim: true },
   photoUrl: { type: String, required: true },
   space: { type: String, default: "" },
+  plantGroup: { type: String, default: "" },
+  light: { type: String, default: "" },
   reminder: { type: reminderSchema, default: () => ({}) },
   addedAt: { type: Date, default: Date.now },
 });

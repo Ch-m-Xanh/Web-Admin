@@ -21,6 +21,8 @@ const createSchema = z.object({
   customName: z.string().min(1, "Ten cay khong duoc de trong"),
   photoUrl: z.string().min(1, "Anh cay khong duoc de trong"),
   space: z.string().optional(),
+  plantGroup: z.string().optional(),
+  light: z.string().optional(),
   reminder: reminderSchema.optional(),
 });
 
