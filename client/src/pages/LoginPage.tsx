@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login as loginApi } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
@@ -8,9 +8,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   const { showSuccess } = useGlobalPopup()
   const navigate = useNavigate()
+
+  // Chuyen huong sau khi trang thai dang nhap da duoc commit vao context.
+  // Neu goi navigate() ngay sau login() thi ProtectedRoute co the van doc
+  // isAuthenticated = false (state chua kip cap nhat) va da nguoc ve /login.
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -19,7 +28,6 @@ export default function LoginPage() {
       const { token, user } = await loginApi(email, password)
       login(token, user)
       showSuccess('Đăng nhập thành công')
-      navigate('/', { replace: true })
     } catch {
       // Error already surfaced via global popup interceptor.
     } finally {
